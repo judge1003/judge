@@ -27,6 +27,8 @@ const AI_BATCH = parseInt(process.env.AI_BATCH || "30", 10); // 주기당 분석
 // AI_TAG_SINCE=2023-01-01 처럼 날짜를 주면 그 이후 촬영분(기존 포함)만 태깅한다.
 const AI_TAG_EXISTING = process.env.AI_TAG_EXISTING === "true";
 const AI_TAG_SINCE = process.env.AI_TAG_SINCE ? Date.parse(process.env.AI_TAG_SINCE) : 0;
+// 무료 한도의 분당 요청 제한을 넘지 않도록 요청 사이에 쉬는 시간(ms)
+const AI_DELAY_MS = parseInt(process.env.AI_DELAY_MS || "6000", 10);
 const TAGS_FILE = path.join(THUMBS_ROOT, "photo-tags.json");
 const BASELINE_FILE = path.join(THUMBS_ROOT, "ai-baseline.json");
 
@@ -268,16 +270,20 @@ async function indexPhotos() {
       if (AI_TAG_SINCE) return p.mtime >= AI_TAG_SINCE; // 지정 날짜 이후 촬영분만
       return AI_TAG_EXISTING || !aiBaseline.has(p.path);
     });
+    let done = 0;
     for (const p of pending.slice(0, AI_BATCH)) {
       try {
         const tags = await tagPhotoWithGemini(p.path);
         photoTags[p.path] = { tags, at: Date.now() };
-        console.log(`AI 태깅: ${p.path} → ${tags.join(", ")}`);
+        done++;
+        if (done % 10 === 0) saveTags(); // 중간 저장 (중단돼도 이어하기)
       } catch (e) {
         console.warn(`AI 태깅 실패 (${p.path}): ${e.message}`);
-        if (String(e.message).includes("429")) break; // 한도 초과면 다음 주기로 미룸
+        if (String(e.message).includes("429")) break; // 일일/분당 한도 초과 → 다음 주기에 이어서
       }
+      await new Promise((r) => setTimeout(r, AI_DELAY_MS)); // 분당 한도 보호
     }
+    if (done > 0) console.log(`AI 태깅: 이번 주기 ${done}장 완료, 남은 ${pending.length - done}장`);
     saveTags();
   } finally {
     indexing = false;
