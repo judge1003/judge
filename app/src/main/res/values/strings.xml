@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">세탁실 대시보드</string>
+    <string name="refresh">새로고침</string>
+    <string name="retry">재시도</string>
+    <string name="updated_at">업데이트: %1$s</string>
+    <string name="offline_cache">오프라인 캐시 (%1$s)</string>
+    <string name="offline_notice">서버에 연결할 수 없어 캐시된 데이터를 표시합니다</string>
+    <string name="load_failed">불러오기 실패 — 네트워크를 확인하세요</string>
+</resources>

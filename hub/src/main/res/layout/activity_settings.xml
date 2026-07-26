@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        app:titleTextColor="?attr/colorOnPrimary"
+        app:navigationIconTint="?attr/colorOnPrimary" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings_hint"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
+            <TextView style="@style/SettingsLabel" android:text="@string/server_address" />
+            <EditText
+                android:id="@+id/input_server"
+                style="@style/SettingsInput"
+                android:hint="http://192.168.0.50:8585" />
+
+            <TextView style="@style/SettingsLabel" android:text="@string/server_token" />
+            <EditText
+                android:id="@+id/input_token"
+                style="@style/SettingsInput"
+                android:hint="@string/server_token_hint" />
+
+            <TextView style="@style/SettingsLabel" android:text="@string/tile_dashboard" />
+            <EditText
+                android:id="@+id/input_status"
+                style="@style/SettingsInput"
+                android:hint="http://192.168.0.50:19999" />
+
+            <Button
+                android:id="@+id/btn_save"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="@string/save" />
+
+            <!-- 자동 백업 -->
+            <TextView
+                style="@style/SettingsLabel"
+                android:layout_marginTop="28dp"
+                android:text="@string/backup_section" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_backup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/backup_switch_label" />
+
+            <Button
+                android:id="@+id/btn_backup_now"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/backup_now" />
+
+            <!-- 색상 테마 -->
+            <TextView
+                style="@style/SettingsLabel"
+                android:layout_marginTop="28dp"
+                android:text="@string/theme_section" />
+
+            <RadioGroup
+                android:id="@+id/theme_group"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <RadioButton
+                    android:id="@+id/theme_black"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/theme_black" />
+
+                <RadioButton
+                    android:id="@+id/theme_blue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="@string/theme_blue" />
+
+                <RadioButton
+                    android:id="@+id/theme_light"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="@string/theme_light" />
+            </RadioGroup>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

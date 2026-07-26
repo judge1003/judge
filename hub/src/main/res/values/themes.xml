@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 기본: 블랙 (윈도우 다크 탐색기 느낌) -->
+    <style name="Theme.Hub.Black" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">#1F1F1F</item>
+        <item name="colorPrimaryVariant">#000000</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#60CDFF</item>
+        <item name="colorSurface">#1E1E1E</item>
+        <item name="android:windowBackground">#000000</item>
+        <item name="android:statusBarColor">#000000</item>
+    </style>
+
+    <!-- 다크 블루 -->
+    <style name="Theme.Hub.Blue" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">#0D2B52</item>
+        <item name="colorPrimaryVariant">#061A35</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#64B5F6</item>
+        <item name="colorSurface">#102A43</item>
+        <item name="android:windowBackground">#0A1930</item>
+        <item name="android:statusBarColor">#061A35</item>
+    </style>
+
+    <!-- 라이트 -->
+    <style name="Theme.Hub.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">#00796B</item>
+        <item name="colorPrimaryVariant">#004D40</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorSecondary">#00897B</item>
+        <item name="android:statusBarColor">#004D40</item>
+    </style>
+
+    <style name="SettingsLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="SettingsInput">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:inputType">textUri</item>
+        <item name="android:importantForAutofill">no</item>
+    </style>
+</resources>

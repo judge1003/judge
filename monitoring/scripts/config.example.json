@@ -1,0 +1,10 @@
+{
+  "telegramBotToken": "여기에_봇파더가_준_토큰",
+  "telegramChatId": "여기에_chat_id_숫자",
+  "hostLabel": "MiniPC",
+  "cpuThresholdPercent": 90,
+  "memThresholdPercent": 90,
+  "diskSpaceThresholdPercent": 90,
+  "alertCooldownMinutes": 60,
+  "knownUsers": ["judge", "Administrator"]
+}

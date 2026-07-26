@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 서버(미니PC) 모양 아이콘: dns material icon을 중앙 안전영역에 배치 -->
+    <group
+        android:scaleX="2.5"
+        android:scaleY="2.5"
+        android:translateX="24"
+        android:translateY="24">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M20,13H4c-0.55,0 -1,0.45 -1,1v6c0,0.55 0.45,1 1,1h16c0.55,0 1,-0.45 1,-1v-6C21,13.45 20.55,13 20,13zM7,19c-1.1,0 -2,-0.9 -2,-2s0.9,-2 2,-2s2,0.9 2,2S8.1,19 7,19zM20,3H4C3.45,3 3,3.45 3,4v6c0,0.55 0.45,1 1,1h16c0.55,0 1,-0.45 1,-1V4C21,3.45 20.55,3 20,3zM7,9C5.9,9 5,8.1 5,7s0.9,-2 2,-2s2,0.9 2,2S8.1,9 7,9z" />
+    </group>
+</vector>
