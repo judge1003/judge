@@ -12,6 +12,8 @@ services:
       - "8585:8585"
     environment:
       - API_TOKEN=${API_TOKEN}
+      # 선택: Gemini API 키를 넣으면 AI 사진 검색(자동 태깅)이 켜진다
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     volumes:
       - C:\HomeServer\files:/data/files     # 파일 스테이션 저장소
       - C:\HomeServer\photos:/data/photos   # 사진 저장소 (자동 백업 대상)

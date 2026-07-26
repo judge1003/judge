@@ -18,6 +18,12 @@ const FILES_ROOT = path.resolve(process.env.FILES_ROOT || "/data/files");
 const PHOTOS_ROOT = path.resolve(process.env.PHOTOS_ROOT || "/data/photos");
 const THUMBS_ROOT = path.resolve(process.env.THUMBS_ROOT || "/data/thumbs");
 
+// AI 사진 태깅 (선택): Gemini API 키가 있으면 사진에 한국어 검색 태그를 자동 부여
+const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const AI_BATCH = parseInt(process.env.AI_BATCH || "30", 10); // 주기당 분석 장수 (무료 한도 보호)
+const TAGS_FILE = path.join(THUMBS_ROOT, "photo-tags.json");
+
 if (!TOKEN) {
   console.error("API_TOKEN 환경변수를 설정해야 합니다 (앱과 서버가 공유하는 비밀값)");
   process.exit(1);
@@ -184,6 +190,92 @@ app.get("/api/photos/full", (req, res, next) => {
   } catch (e) {
     next(e);
   }
+});
+
+// ============ AI 사진 검색 (Gemini) ============
+
+let photoTags = {};
+try {
+  photoTags = JSON.parse(fs.readFileSync(TAGS_FILE, "utf8"));
+} catch {}
+
+function saveTags() {
+  fs.writeFile(TAGS_FILE, JSON.stringify(photoTags), () => {});
+}
+
+async function tagPhotoWithGemini(relPath) {
+  const file = path.join(PHOTOS_ROOT, relPath);
+  // 전송량을 줄이기 위해 768px로 축소해서 보낸다
+  const jpeg = await sharp(file).rotate().resize(768, 768, { fit: "inside" }).jpeg({ quality: 80 }).toBuffer();
+  const body = {
+    contents: [{
+      parts: [
+        { text: "이 사진을 보고 검색용 한국어 키워드를 뽑아라. 사물/장면/장소/분위기 위주로 최대 12개. 반드시 JSON 문자열 배열만 출력해라. 예: [\"바다\",\"노을\",\"강아지\"]" },
+        { inline_data: { mime_type: "image/jpeg", data: jpeg.toString("base64") } },
+      ],
+    }],
+  };
+  const resp = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_KEY}`,
+    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }
+  );
+  if (!resp.ok) throw new Error(`Gemini HTTP ${resp.status}`);
+  const json = await resp.json();
+  const text = json.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+  const start = text.indexOf("[");
+  const end = text.lastIndexOf("]");
+  const tags = JSON.parse(text.slice(start, end + 1));
+  return Array.isArray(tags) ? tags.map(String) : [];
+}
+
+let indexing = false;
+async function indexPhotos() {
+  if (!GEMINI_KEY || indexing) return;
+  indexing = true;
+  try {
+    const all = await walkPhotos(PHOTOS_ROOT, []);
+    const pending = all.filter((p) => !photoTags[p.path]);
+    for (const p of pending.slice(0, AI_BATCH)) {
+      try {
+        const tags = await tagPhotoWithGemini(p.path);
+        photoTags[p.path] = { tags, at: Date.now() };
+        console.log(`AI 태깅: ${p.path} → ${tags.join(", ")}`);
+      } catch (e) {
+        console.warn(`AI 태깅 실패 (${p.path}): ${e.message}`);
+        if (String(e.message).includes("429")) break; // 한도 초과면 다음 주기로 미룸
+      }
+    }
+    saveTags();
+  } finally {
+    indexing = false;
+  }
+}
+
+if (GEMINI_KEY) {
+  setTimeout(indexPhotos, 10_000);
+  setInterval(indexPhotos, 10 * 60 * 1000);
+}
+
+app.get("/api/search", async (req, res, next) => {
+  try {
+    const q = (req.query.q || "").toString().trim().toLowerCase();
+    if (!q) return res.json({ total: 0, photos: [] });
+    const all = await walkPhotos(PHOTOS_ROOT, []);
+    const matched = all.filter((p) => {
+      if (p.path.toLowerCase().includes(q)) return true;
+      const entry = photoTags[p.path];
+      return entry && entry.tags.some((t) => t.toLowerCase().includes(q));
+    });
+    matched.sort((a, b) => b.mtime - a.mtime);
+    res.json({ total: matched.length, photos: matched.slice(0, 500), aiEnabled: !!GEMINI_KEY });
+  } catch (e) {
+    next(e);
+  }
+});
+
+app.get("/api/ai/status", async (req, res) => {
+  const all = await walkPhotos(PHOTOS_ROOT, []);
+  res.json({ enabled: !!GEMINI_KEY, indexed: Object.keys(photoTags).length, total: all.length });
 });
 
 // ============ 자동 백업 (폰 → 서버) ============

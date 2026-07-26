@@ -129,6 +129,23 @@ class ApiClient(context: Context) {
         }
     }
 
+    /** AI 태그 + 파일명 기반 사진 검색 */
+    fun searchPhotos(query: String): Pair<Int, List<Photo>> {
+        val conn = open("GET", "/api/search?q=${enc(query)}")
+        try {
+            expectOk(conn)
+            val json = JSONObject(conn.inputStream.bufferedReader().readText())
+            val arr = json.getJSONArray("photos")
+            val photos = (0 until arr.length()).map { i ->
+                val o = arr.getJSONObject(i)
+                Photo(o.getString("path"), o.optLong("mtime"))
+            }
+            return json.getInt("total") to photos
+        } finally {
+            conn.disconnect()
+        }
+    }
+
     /** Coil 등 이미지 로더가 쓰는 URL (토큰은 쿼리로 전달) */
     fun thumbUrl(path: String): String = "$base/api/photos/thumb?path=${enc(path)}&token=${enc(token)}"
 

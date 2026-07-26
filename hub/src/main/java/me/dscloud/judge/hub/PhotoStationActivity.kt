@@ -39,6 +39,9 @@ class PhotoStationActivity : AppCompatActivity() {
     private var loadedPhotos = 0
     private var loading = false
 
+    /** 검색어 (비어 있으면 전체 타임라인 모드) */
+    private var searchQuery = ""
+
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeUtil.apply(this)
         super.onCreate(savedInstanceState)
@@ -94,13 +97,22 @@ class PhotoStationActivity : AppCompatActivity() {
         loading = true
         swipe.isRefreshing = true
         val offset = loadedPhotos
+        val query = searchQuery
         lifecycleScope.launch {
-            runCatching { withContext(Dispatchers.IO) { api.listPhotos(offset, 120) } }
+            runCatching {
+                withContext(Dispatchers.IO) {
+                    if (query.isBlank()) api.listPhotos(offset, 120) else api.searchPhotos(query)
+                }
+            }
                 .onSuccess { (t, photos) ->
-                    total = t
+                    total = if (query.isBlank()) t else photos.size // 검색은 한 번에 전달됨
                     loadedPhotos += photos.size
                     adapter.append(photos)
-                    supportActionBar?.subtitle = getString(R.string.photo_count, t)
+                    supportActionBar?.subtitle = if (query.isBlank()) {
+                        getString(R.string.photo_count, t)
+                    } else {
+                        getString(R.string.search_result_count, query, t)
+                    }
                 }
                 .onFailure {
                     Snackbar.make(swipe, getString(R.string.request_failed, it.message), Snackbar.LENGTH_LONG)
@@ -109,6 +121,33 @@ class PhotoStationActivity : AppCompatActivity() {
             loading = false
             swipe.isRefreshing = false
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: android.view.Menu): Boolean {
+        menuInflater.inflate(R.menu.photos_menu, menu)
+        val searchItem = menu.findItem(R.id.action_search)
+        val searchView = searchItem.actionView as androidx.appcompat.widget.SearchView
+        searchView.queryHint = getString(R.string.search_hint)
+        searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                searchQuery = query.orEmpty().trim()
+                reload()
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?) = false
+        })
+        searchItem.setOnActionExpandListener(object : android.view.MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(item: android.view.MenuItem) = true
+            override fun onMenuItemActionCollapse(item: android.view.MenuItem): Boolean {
+                if (searchQuery.isNotBlank()) {
+                    searchQuery = ""
+                    reload()
+                }
+                return true
+            }
+        })
+        return true
     }
 
     /** 원본을 폰의 다운로드 폴더로 저장한다. */
