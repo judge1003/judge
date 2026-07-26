@@ -48,4 +48,5 @@
     <string name="no_viewer_app">이 파일을 열 수 있는 앱이 없습니다</string>
     <string name="downloading">다운로드 중: %1$s</string>
     <string name="photo_count">사진 %1$d장</string>
+    <string name="date_header_format">yyyy년 M월 d일 (E)</string>
 </resources>
