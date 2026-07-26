@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">통합관리 시스템</string>
+    <string name="tile_photos">포토 스테이션</string>
+    <string name="tile_files">파일 스테이션</string>
+    <string name="tile_dashboard">대시보드</string>
+    <string name="tile_settings">설정</string>
+    <string name="refresh">새로고침</string>
+    <string name="retry">재시도</string>
+    <string name="save">저장</string>
+    <string name="saved">저장되었습니다</string>
+    <string name="settings_hint">각 서비스의 주소를 입력하세요. 미니PC 세팅 후 도메인이나 IP 주소를 넣으면 됩니다.</string>
+    <string name="settings_backup_note">📌 사진 자동 백업(와이파이·충전 중 조건)과 동기화는 Immich 앱의 백업 설정에서 관리합니다.</string>
+    <string name="manage_backup">자동 백업 관리 (Immich 열기)</string>
+    <string name="backup_hint">Immich 앱의 백업 메뉴에서 상태를 확인하세요</string>
+    <string name="backup_install_immich">자동 백업에는 Immich 앱이 필요합니다. 설치 페이지로 이동합니다.</string>
+    <string name="url_not_set">주소가 설정되지 않았습니다. 설정에서 입력해주세요.</string>
+    <string name="updated_at">업데이트: %1$s</string>
+    <string name="load_failed">불러오기 실패 — 네트워크를 확인하세요</string>
+</resources>

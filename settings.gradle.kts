@@ -14,5 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "LaundryDashboard"
+rootProject.name = "JudgeApps"
 include(":app")
+include(":hub")

@@ -26,17 +26,25 @@ jobs:
         with:
           gradle-version: "8.14.3"
 
-      - name: Build debug APK
-        run: gradle assembleDebug
+      - name: Build debug APKs
+        run: gradle :app:assembleDebug :hub:assembleDebug
 
-      - name: Rename APK
-        run: cp app/build/outputs/apk/debug/app-debug.apk laundry-dashboard.apk
+      - name: Rename APKs
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk laundry-dashboard.apk
+          cp hub/build/outputs/apk/debug/hub-debug.apk minipc-hub.apk
 
-      - name: Upload APK artifact
+      - name: Upload laundry dashboard APK
         uses: actions/upload-artifact@v4
         with:
           name: laundry-dashboard-apk
           path: laundry-dashboard.apk
+
+      - name: Upload mini PC hub APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: minipc-hub-apk
+          path: minipc-hub.apk
 
       # main 브랜치에 푸시되면 "latest" 릴리스로도 올려서
       # 휴대폰 브라우저에서 바로 다운로드할 수 있게 한다.
@@ -45,7 +53,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: 세탁실 대시보드 APK (최신)
-          files: laundry-dashboard.apk
+          name: 앱 APK (최신)
+          files: |
+            laundry-dashboard.apk
+            minipc-hub.apk
           prerelease: false
           make_latest: "true"

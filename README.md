@@ -1,8 +1,29 @@
-# 세탁실 대시보드 앱 (Laundry Dashboard)
+# Judge 홈서버 앱 모음
 
-NAS 대시보드(`http://judge.dscloud.me:3033/Dashboard/laundry/`)를 안드로이드 앱으로 보는 프로젝트입니다.
+안드로이드 앱 2개와 미니PC 모니터링 구성을 담은 저장소입니다.
 
-## 기능
+| 모듈 | 앱 | 설명 |
+|---|---|---|
+| `app/` | **세탁실 대시보드** | NAS 세탁실 대시보드 전용 앱 (5분 백그라운드 동기화 + 수동 새로고침) |
+| `hub/` | **통합관리 시스템** | 미니PC용 허브 앱 — 포토 스테이션 / 파일 스테이션 / 대시보드 / 설정 |
+| `monitoring/` | - | 미니PC 감시 스크립트 (CPU/MEM/디스크/로그인 알람) + Uptime Kuma |
+
+## 통합관리 시스템 (hub)
+
+시놀로지 DSM처럼 홈 화면 타일에서 각 서비스로 들어갑니다:
+
+- **포토 스테이션** — Immich 앱이 설치돼 있으면 실행, 없으면 웹으로 열기
+- **파일 스테이션** — Nextcloud 앱이 설치돼 있으면 실행, 없으면 웹으로 열기
+- **대시보드** — 서버 모니터링(Netdata 등) 웹 화면
+- **설정** — 각 서비스 주소 입력, 자동 백업(Immich) 바로가기
+
+서비스 주소는 앱 설정 화면에서 입력합니다 (미니PC 세팅 후 IP나 도메인 입력).
+
+## 세탁실 대시보드 (app)
+
+NAS 대시보드(`http://judge.dscloud.me:3033/Dashboard/laundry/`)를 보는 전용 앱입니다.
+
+## 기능 (세탁실 대시보드)
 
 - **대시보드 표시** — 앱을 열면 NAS의 세탁실 대시보드를 바로 보여줍니다.
 - **수동 새로고침** — 상단 툴바의 새로고침 버튼 또는 화면을 아래로 당기기(pull-to-refresh)로 언제든 즉시 갱신할 수 있습니다.
@@ -13,8 +34,8 @@ NAS 대시보드(`http://judge.dscloud.me:3033/Dashboard/laundry/`)를 안드로
 
 ## APK 다운로드 방법
 
-1. GitHub 저장소의 **Actions** 탭 → 최신 **Build APK** 실행 → `laundry-dashboard-apk` 아티팩트 다운로드
-2. `main` 브랜치에 머지되면 **Releases**의 `latest` 릴리스에서 휴대폰으로 바로 `laundry-dashboard.apk`를 받을 수 있습니다.
+1. GitHub 저장소의 **Actions** 탭 → 최신 **Build APK** 실행 → `laundry-dashboard-apk`(세탁실) / `minipc-hub-apk`(통합관리) 아티팩트 다운로드
+2. `main` 브랜치에 머지되면 **Releases**의 `latest` 릴리스에서 휴대폰으로 바로 두 APK를 받을 수 있습니다.
 3. 휴대폰에서 APK 설치 시 "출처를 알 수 없는 앱" 설치 허용이 필요합니다.
 
 ## 빌드 방법 (로컬)
@@ -22,8 +43,8 @@ NAS 대시보드(`http://judge.dscloud.me:3033/Dashboard/laundry/`)를 안드로
 Android Studio에서 프로젝트를 열거나:
 
 ```bash
-gradle assembleDebug
-# 결과물: app/build/outputs/apk/debug/app-debug.apk
+gradle :app:assembleDebug   # 세탁실 대시보드 → app/build/outputs/apk/debug/app-debug.apk
+gradle :hub:assembleDebug   # 통합관리 시스템 → hub/build/outputs/apk/debug/hub-debug.apk
 ```
 
 ## 알아두면 좋은 점 (5분 간격 관련)
