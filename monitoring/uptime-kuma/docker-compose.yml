@@ -1,0 +1,12 @@
+# 기존 시놀로지 NAS에 올리는 Uptime Kuma (외부 감시자).
+# 미니PC의 전원 on/off, 네트워크 단절, 각 서비스(Immich/Nextcloud 등) 생존을 감시한다.
+# 시놀로지 Container Manager → 프로젝트 → 이 파일로 생성 → http://<NAS IP>:3001
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./data:/app/data
