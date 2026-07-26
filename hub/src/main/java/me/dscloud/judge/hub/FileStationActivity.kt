@@ -43,6 +43,13 @@ class FileStationActivity : AppCompatActivity() {
 
     private var currentPath = ""
 
+    // 탐색기식 정렬: 열 머리글을 누르면 기준 변경, 다시 누르면 역순
+    private var sortByDate = true      // 기본: 최신 날짜순
+    private var sortAscending = false
+    private var lastEntries: List<ApiClient.Entry> = emptyList()
+    private lateinit var colName: TextView
+    private lateinit var colDate: TextView
+
     /** 편집을 위해 외부 앱으로 연 파일 (돌아오면 변경 감지 후 재업로드) */
     private var openedFile: File? = null
     private var openedRemoteDir = ""
@@ -81,6 +88,10 @@ class FileStationActivity : AppCompatActivity() {
         setContentView(R.layout.activity_files)
         api = ApiClient(this)
         addressBar = findViewById(R.id.address_bar)
+        colName = findViewById(R.id.col_name)
+        colDate = findViewById(R.id.col_date)
+        colName.setOnClickListener { toggleSort(byDate = false) }
+        colDate.setOnClickListener { toggleSort(byDate = true) }
 
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
@@ -125,13 +136,48 @@ class FileStationActivity : AppCompatActivity() {
         val path = currentPath
         lifecycleScope.launch {
             runCatching { withContext(Dispatchers.IO) { api.listFiles(path) } }
-                .onSuccess { adapter.submit(it) }
+                .onSuccess {
+                    lastEntries = it
+                    applySort()
+                }
                 .onFailure {
                     Snackbar.make(list, getString(R.string.request_failed, it.message), Snackbar.LENGTH_LONG)
                         .setAction(R.string.retry) { load() }.show()
                 }
             swipe.isRefreshing = false
         }
+    }
+
+    private fun toggleSort(byDate: Boolean) {
+        if (sortByDate == byDate) {
+            sortAscending = !sortAscending
+        } else {
+            sortByDate = byDate
+            sortAscending = !byDate // 이름은 가나다순, 날짜는 최신순이 기본
+        }
+        applySort()
+    }
+
+    /** 폴더 우선 + 선택한 기준으로 정렬하고 머리글에 ▲▼ 표시 */
+    private fun applySort() {
+        val comparator: Comparator<ApiClient.Entry> = if (sortByDate) {
+            compareByDescending<ApiClient.Entry> { it.isDir }
+                .then(if (sortAscending) compareBy { it.mtime } else compareByDescending { it.mtime })
+        } else {
+            compareByDescending<ApiClient.Entry> { it.isDir }
+                .then(
+                    if (sortAscending) {
+                        compareBy(String.CASE_INSENSITIVE_ORDER) { it.name }
+                    } else {
+                        compareByDescending(String.CASE_INSENSITIVE_ORDER) { it.name }
+                    }
+                )
+        }
+        adapter.submit(lastEntries.sortedWith(comparator))
+
+        val arrow = if (sortAscending) " ▲" else " ▼"
+        colName.text = getString(R.string.col_name) + if (!sortByDate) arrow else ""
+        colDate.text = getString(R.string.col_modified_size) + if (sortByDate) arrow else ""
     }
 
     /** 파일을 받아 편집 가능한 앱으로 연다. 돌아오면 onResume에서 변경 감지. */
