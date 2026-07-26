@@ -1,0 +1,13 @@
+{
+  "name": "homeserver-api",
+  "version": "1.0.0",
+  "description": "미니PC 통합관리 시스템 자체 API 서버 (파일/사진/백업)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "sharp": "^0.33.5"
+  }
+}

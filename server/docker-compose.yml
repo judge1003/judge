@@ -1,0 +1,18 @@
+# 미니PC(윈도우 + Docker Desktop)에서 실행:
+#   1) 이 폴더를 미니PC로 복사 (예: C:\HomeServer\server)
+#   2) .env 파일을 만들어 API_TOKEN=원하는비밀값 입력
+#   3) 아래 volumes의 왼쪽 경로를 실제 저장 위치로 수정
+#   4) docker compose up -d
+services:
+  homeserver-api:
+    build: .
+    container_name: homeserver-api
+    restart: unless-stopped
+    ports:
+      - "8585:8585"
+    environment:
+      - API_TOKEN=${API_TOKEN}
+    volumes:
+      - C:\HomeServer\files:/data/files     # 파일 스테이션 저장소
+      - C:\HomeServer\photos:/data/photos   # 사진 저장소 (자동 백업 대상)
+      - C:\HomeServer\thumbs:/data/thumbs   # 썸네일 캐시
