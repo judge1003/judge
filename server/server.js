@@ -22,7 +22,11 @@ const THUMBS_ROOT = path.resolve(process.env.THUMBS_ROOT || "/data/thumbs");
 const GEMINI_KEY = process.env.GEMINI_API_KEY || "";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const AI_BATCH = parseInt(process.env.AI_BATCH || "30", 10); // 주기당 분석 장수 (무료 한도 보호)
+// 기본 동작: 서버에 이미 있던 기존 사진은 절대 외부로 보내지 않고,
+// 이후 새로 백업되는 사진만 태깅한다. 전체를 태깅하려면 AI_TAG_EXISTING=true.
+const AI_TAG_EXISTING = process.env.AI_TAG_EXISTING === "true";
 const TAGS_FILE = path.join(THUMBS_ROOT, "photo-tags.json");
+const BASELINE_FILE = path.join(THUMBS_ROOT, "ai-baseline.json");
 
 if (!TOKEN) {
   console.error("API_TOKEN 환경변수를 설정해야 합니다 (앱과 서버가 공유하는 비밀값)");
@@ -160,8 +164,15 @@ app.get("/api/photos", async (req, res, next) => {
   try {
     const offset = parseInt(req.query.offset || "0", 10);
     const limit = Math.min(parseInt(req.query.limit || "200", 10), 500);
+    const sort = req.query.sort === "name" ? "name" : "date";
+    const asc = req.query.order === "asc";
     const all = await walkPhotos(PHOTOS_ROOT, []);
-    all.sort((a, b) => b.mtime - a.mtime);
+    all.sort((a, b) => {
+      const cmp = sort === "name"
+        ? a.path.substring(a.path.lastIndexOf("/") + 1).localeCompare(b.path.substring(b.path.lastIndexOf("/") + 1))
+        : a.mtime - b.mtime;
+      return asc ? cmp : -cmp;
+    });
     res.json({ total: all.length, photos: all.slice(offset, offset + limit) });
   } catch (e) {
     next(e);
@@ -228,13 +239,30 @@ async function tagPhotoWithGemini(relPath) {
   return Array.isArray(tags) ? tags.map(String) : [];
 }
 
+// 기존 사진 목록(베이스라인): 첫 실행 시점에 이미 있던 사진은 태깅 대상에서 제외
+let aiBaseline = new Set();
+try {
+  aiBaseline = new Set(JSON.parse(fs.readFileSync(BASELINE_FILE, "utf8")));
+} catch {}
+
 let indexing = false;
 async function indexPhotos() {
   if (!GEMINI_KEY || indexing) return;
   indexing = true;
   try {
     const all = await walkPhotos(PHOTOS_ROOT, []);
-    const pending = all.filter((p) => !photoTags[p.path]);
+
+    // 첫 실행: 기존 사진 전체를 베이스라인으로 기록만 하고 분석하지 않는다
+    if (!AI_TAG_EXISTING && aiBaseline.size === 0 && !fs.existsSync(BASELINE_FILE)) {
+      aiBaseline = new Set(all.map((p) => p.path));
+      fs.writeFileSync(BASELINE_FILE, JSON.stringify([...aiBaseline]));
+      console.log(`AI 태깅: 기존 사진 ${aiBaseline.size}장은 제외 등록됨 (신규 백업만 태깅)`);
+      return;
+    }
+
+    const pending = all.filter(
+      (p) => !photoTags[p.path] && (AI_TAG_EXISTING || !aiBaseline.has(p.path))
+    );
     for (const p of pending.slice(0, AI_BATCH)) {
       try {
         const tags = await tagPhotoWithGemini(p.path);
@@ -275,7 +303,13 @@ app.get("/api/search", async (req, res, next) => {
 
 app.get("/api/ai/status", async (req, res) => {
   const all = await walkPhotos(PHOTOS_ROOT, []);
-  res.json({ enabled: !!GEMINI_KEY, indexed: Object.keys(photoTags).length, total: all.length });
+  res.json({
+    enabled: !!GEMINI_KEY,
+    newOnly: !AI_TAG_EXISTING,
+    excludedExisting: aiBaseline.size,
+    indexed: Object.keys(photoTags).length,
+    total: all.length,
+  });
 });
 
 // ============ 자동 백업 (폰 → 서버) ============

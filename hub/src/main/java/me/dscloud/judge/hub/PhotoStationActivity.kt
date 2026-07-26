@@ -38,6 +38,10 @@ class PhotoStationActivity : AppCompatActivity() {
     /** 검색어 (비어 있으면 전체 타임라인 모드) */
     private var searchQuery = ""
 
+    // 정렬: 기본은 최신 날짜순. 같은 항목을 다시 누르면 역순.
+    private var sortByName = false
+    private var sortAscending = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         ThemeUtil.apply(this)
         super.onCreate(savedInstanceState)
@@ -91,7 +95,11 @@ class PhotoStationActivity : AppCompatActivity() {
         lifecycleScope.launch {
             runCatching {
                 withContext(Dispatchers.IO) {
-                    if (query.isBlank()) api.listPhotos(offset, 120) else api.searchPhotos(query)
+                    if (query.isBlank()) {
+                        api.listPhotos(offset, 120, sortByName, sortAscending)
+                    } else {
+                        api.searchPhotos(query)
+                    }
                 }
             }
                 .onSuccess { (t, photos) ->
@@ -138,6 +146,22 @@ class PhotoStationActivity : AppCompatActivity() {
             }
         })
         return true
+    }
+
+    override fun onOptionsItemSelected(item: android.view.MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_sort_date -> {
+                if (!sortByName) sortAscending = !sortAscending else { sortByName = false; sortAscending = false }
+                reload()
+                true
+            }
+            R.id.action_sort_name -> {
+                if (sortByName) sortAscending = !sortAscending else { sortByName = true; sortAscending = true }
+                reload()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     /** 원본을 폰의 다운로드 폴더로 저장한다. */

@@ -49,6 +49,8 @@
     <string name="downloading">다운로드 중: %1$s</string>
     <string name="photo_count">사진 %1$d장</string>
     <string name="search">검색</string>
+    <string name="sort_by_date">날짜순 정렬 (다시 누르면 역순)</string>
+    <string name="sort_by_name">이름순 정렬 (다시 누르면 역순)</string>
     <string name="search_hint">AI 검색 (예: 바다, 강아지, 음식)</string>
     <string name="search_result_count">\'%1$s\' 검색 결과 %2$d장</string>
 </resources>

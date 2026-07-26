@@ -9,4 +9,14 @@
         app:actionViewClass="androidx.appcompat.widget.SearchView"
         app:showAsAction="always|collapseActionView" />
 
+    <item
+        android:id="@+id/action_sort_date"
+        android:title="@string/sort_by_date"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_sort_name"
+        android:title="@string/sort_by_name"
+        app:showAsAction="never" />
+
 </menu>

@@ -113,8 +113,10 @@ class ApiClient(context: Context) {
 
     // ---- 포토 스테이션 ----
 
-    fun listPhotos(offset: Int, limit: Int): Pair<Int, List<Photo>> {
-        val conn = open("GET", "/api/photos?offset=$offset&limit=$limit")
+    fun listPhotos(offset: Int, limit: Int, sortByName: Boolean = false, ascending: Boolean = false): Pair<Int, List<Photo>> {
+        val sort = if (sortByName) "name" else "date"
+        val order = if (ascending) "asc" else "desc"
+        val conn = open("GET", "/api/photos?offset=$offset&limit=$limit&sort=$sort&order=$order")
         try {
             expectOk(conn)
             val json = JSONObject(conn.inputStream.bufferedReader().readText())
