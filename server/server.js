@@ -24,7 +24,9 @@ const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const AI_BATCH = parseInt(process.env.AI_BATCH || "30", 10); // 주기당 분석 장수 (무료 한도 보호)
 // 기본 동작: 서버에 이미 있던 기존 사진은 절대 외부로 보내지 않고,
 // 이후 새로 백업되는 사진만 태깅한다. 전체를 태깅하려면 AI_TAG_EXISTING=true.
+// AI_TAG_SINCE=2023-01-01 처럼 날짜를 주면 그 이후 촬영분(기존 포함)만 태깅한다.
 const AI_TAG_EXISTING = process.env.AI_TAG_EXISTING === "true";
+const AI_TAG_SINCE = process.env.AI_TAG_SINCE ? Date.parse(process.env.AI_TAG_SINCE) : 0;
 const TAGS_FILE = path.join(THUMBS_ROOT, "photo-tags.json");
 const BASELINE_FILE = path.join(THUMBS_ROOT, "ai-baseline.json");
 
@@ -253,16 +255,19 @@ async function indexPhotos() {
     const all = await walkPhotos(PHOTOS_ROOT, []);
 
     // 첫 실행: 기존 사진 전체를 베이스라인으로 기록만 하고 분석하지 않는다
-    if (!AI_TAG_EXISTING && aiBaseline.size === 0 && !fs.existsSync(BASELINE_FILE)) {
+    // (AI_TAG_SINCE나 AI_TAG_EXISTING을 쓰면 베이스라인 방식은 건너뛴다)
+    if (!AI_TAG_EXISTING && !AI_TAG_SINCE && aiBaseline.size === 0 && !fs.existsSync(BASELINE_FILE)) {
       aiBaseline = new Set(all.map((p) => p.path));
       fs.writeFileSync(BASELINE_FILE, JSON.stringify([...aiBaseline]));
       console.log(`AI 태깅: 기존 사진 ${aiBaseline.size}장은 제외 등록됨 (신규 백업만 태깅)`);
       return;
     }
 
-    const pending = all.filter(
-      (p) => !photoTags[p.path] && (AI_TAG_EXISTING || !aiBaseline.has(p.path))
-    );
+    const pending = all.filter((p) => {
+      if (photoTags[p.path]) return false;
+      if (AI_TAG_SINCE) return p.mtime >= AI_TAG_SINCE; // 지정 날짜 이후 촬영분만
+      return AI_TAG_EXISTING || !aiBaseline.has(p.path);
+    });
     for (const p of pending.slice(0, AI_BATCH)) {
       try {
         const tags = await tagPhotoWithGemini(p.path);
