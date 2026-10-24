@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#2d5a27">
+  <title>English Buddy</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-theme="block">
+  <div class="sky" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand"><span class="logo" aria-hidden="true"></span><span id="title">English Buddy</span><span class="badge">Pre-A1</span></div>
+    <div class="stars" title="오늘 모은 별"><span aria-hidden="true">⭐</span> <b id="starCount">0</b></div>
+    <div id="status" class="status" data-state="idle">대기</div>
+    <button id="btnReport" class="chip">📒 리포트</button>
+    <button id="btnSettings" class="chip" aria-label="설정">⚙️</button>
+  </header>
+
+  <main class="stage">
+    <section class="buddy-area">
+      <div id="bubble" class="bubble">안녕! 시작 버튼을 누르면 Buddy가 말을 걸어요.</div>
+      <div class="buddy-row">
+        <div id="buddy" class="buddy" aria-label="AI Buddy">
+          <div class="head"><div class="hair"></div><div class="eye l"></div><div class="eye r"></div><div class="nose"></div><div class="mouth"></div></div>
+        </div>
+        <div id="picture" class="picture" aria-live="polite"></div>
+      </div>
+      <div id="hint" class="hint" hidden></div>
+      <video id="selfie" class="selfie" autoplay muted playsinline hidden></video>
+    </section>
+
+    <section class="chat" aria-label="대화">
+      <ol id="log" class="log"></ol>
+      <div id="live" class="live" aria-live="polite"></div>
+    </section>
+  </main>
+
+  <footer class="bottombar">
+    <div id="tryCard" class="try" hidden><span>이렇게 말해 봐!</span> <b id="tryText"></b></div>
+    <div id="meter" class="meter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+  </footer>
+
+  <div id="startOverlay" class="overlay">
+    <div class="card">
+      <h1>⛏️ English Buddy</h1>
+      <p>버튼은 처음 한 번만! 그다음엔 그냥 말하면 돼요.</p>
+      <button id="btnStart" class="big">▶ 시작하기</button>
+      <p id="startMsg" class="small"></p>
+    </div>
+  </div>
+
+  <dialog id="settings">
+    <form method="dialog" class="form">
+      <h2>설정 (부모님용)</h2>
+      <label>아이 이름(영문) <input id="setName" maxlength="20" placeholder="Liam"></label>
+      <label>배경 테마
+        <select id="setTheme"><option value="block">블록 월드 (블록 쌓기 게임 느낌)</option><option value="arena">배틀 아레나 (3대3 대전 게임 느낌)</option></select>
+      </label>
+      <label>말하기 속도 <input id="setRate" type="range" min="0.6" max="1.1" step="0.05"></label>
+      <label class="row"><input id="setKoVoice" type="checkbox"> 한국어 힌트도 소리로 읽어주기</label>
+      <label class="row"><input id="setCamera" type="checkbox"> 아이 얼굴 카메라 표시 (화면에만, 전송 안 함)</label>
+      <label>접속 코드 <input id="setCode" type="password" autocomplete="off" placeholder="서버에 ACCESS_CODE를 설정했다면 입력"></label>
+      <menu><button value="cancel">취소</button><button id="btnSave" value="save" class="primary">저장</button></menu>
+    </form>
+  </dialog>
+
+  <dialog id="report">
+    <div class="form">
+      <h2>오늘의 리포트</h2>
+      <div id="reportBody"></div>
+      <menu><button id="btnClear">기록 지우기</button><button id="btnCloseReport" class="primary">닫기</button></menu>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
